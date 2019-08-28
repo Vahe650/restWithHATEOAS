@@ -15,7 +15,6 @@ import javax.persistence.*;
 
 public class Task {
     @Id
-    @JsonIgnore
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column
     private int id;

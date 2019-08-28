@@ -1,10 +1,13 @@
 package com.taskemployeerest.rest.controller;
 
+import com.taskemployeerest.hateoas.EmployeeResource;
 import com.taskemployeerest.rest.model.Employer;
 import com.taskemployeerest.rest.model.Task;
 import com.taskemployeerest.rest.repository.EmployerRepository;
 import com.taskemployeerest.rest.repository.TaskRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,6 +41,15 @@ public class TaskEndpoint {
         return one.<ResponseEntity>map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.badRequest().body("taask with " + id + " id is not present"));
     }
 
+    @GetMapping("/getAllByEmployee/{employeeId}")
+    public ResponseEntity getAllByEmployee(@PathVariable(name = "employeeId") int employeeId) {
+        Employer one = employerRepository.getOne(employeeId);
+        List<Task> tasks = taskRepository.findByEmployerId(employeeId);
+        Link link = ControllerLinkBuilder.linkTo(EmployeeResource.class)
+                .slash("getOneEmployee").slash(one.getId()).withSelfRel();
+        return ResponseEntity.ok(tasks);
+    }
+
 
     @DeleteMapping("/deleteTask{id}")
     public ResponseEntity delete(@PathVariable(name = "id") int id) {
@@ -51,7 +63,7 @@ public class TaskEndpoint {
 
 
     @PutMapping("/update/{taskID}")
-    public ResponseEntity update(@PathVariable("taskID") int id,@RequestBody Task task){
+    public ResponseEntity update(@PathVariable("taskID") int id, @RequestBody Task task) {
         Optional<Task> byId = taskRepository.findById(id);
         if (!byId.isPresent()) {
             return ResponseEntity.badRequest().body("task with " + id + " id is not present");

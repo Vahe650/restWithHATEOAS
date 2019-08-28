@@ -1,14 +1,19 @@
 package com.taskemployeerest.rest.controller;
 
+import com.taskemployeerest.hateoas.EmployeeResource;
 import com.taskemployeerest.rest.model.Employer;
 import com.taskemployeerest.rest.repository.EmployerRepository;
 import com.taskemployeerest.rest.repository.TaskRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.Resources;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @AllArgsConstructor
@@ -18,14 +23,17 @@ public class EmployeeEndpoint {
 
 
     @GetMapping("/all")
-    public List<Employer> allElmployees(){
-        List<Employer> all = employerRepository.findAll();
-        return all ;
+    public ResponseEntity<Resources<EmployeeResource>> allElmployees(){
+        List<EmployeeResource> all = employerRepository.findAll().stream().map(EmployeeResource::new).collect(Collectors.toList());;
+        final Resources<EmployeeResource> resources = new Resources<>(all);
+        final String uriString = ServletUriComponentsBuilder.fromCurrentRequest().build().toUriString();
+        resources.add(new Link(uriString, "self"));
+        return ResponseEntity.ok(resources);
 
     }
 
-    @GetMapping("/getOneEmploYee/{id}")
-    public ResponseEntity one(@PathVariable(name = "id")int id){
+    @GetMapping("/getOneEmployee/{id}")
+    public ResponseEntity get(@PathVariable(name = "id")int id){
         Optional<Employer> one = employerRepository.findById(id);
         return one.<ResponseEntity>map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.badRequest().body("empolyee with " + id + " id is not present"));
     }
