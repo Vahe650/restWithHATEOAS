@@ -1,4 +1,4 @@
-package com.taskemployeerest.hateoas;
+package com.taskemployeerest.rest.hateoas;
 
 
 import com.taskemployeerest.rest.controller.EmployeeEndpoint;

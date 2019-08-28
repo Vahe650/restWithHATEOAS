@@ -1,6 +1,6 @@
 package com.taskemployeerest.rest.controller;
 
-import com.taskemployeerest.hateoas.EmployeeResource;
+import com.taskemployeerest.rest.hateoas.EmployeeResource;
 import com.taskemployeerest.rest.model.Employer;
 import com.taskemployeerest.rest.repository.EmployerRepository;
 import com.taskemployeerest.rest.repository.TaskRepository;

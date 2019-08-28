@@ -1,6 +1,6 @@
 package com.taskemployeerest.rest.controller;
 
-import com.taskemployeerest.hateoas.EmployeeResource;
+import com.taskemployeerest.rest.hateoas.EmployeeResource;
 import com.taskemployeerest.rest.model.Employer;
 import com.taskemployeerest.rest.model.Task;
 import com.taskemployeerest.rest.repository.EmployerRepository;
@@ -11,7 +11,6 @@ import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
