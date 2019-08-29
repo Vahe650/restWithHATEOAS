@@ -21,8 +21,6 @@ public class EmployeeResource extends ResourceSupport {
   public EmployeeResource(final Employer employer) {
     this.employer = employer;
     final int id = employer.getId();
-    final String name = employer.getName();
-    final List <Task> tasks = employer.getTasks();
     add(linkTo(methodOn(EmployeeEndpoint.class).allElmployees()).withRel("all"));
     add(linkTo(methodOn(TaskEndpoint.class).getAllByEmployee(id)).withRel("getEmployeeSTasks"));
     add(linkTo(methodOn(EmployeeEndpoint.class).get(id)).withRel("employee"));
