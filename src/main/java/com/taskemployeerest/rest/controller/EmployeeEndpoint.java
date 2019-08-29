@@ -28,7 +28,6 @@ public class EmployeeEndpoint {
     @GetMapping("/all")
     public ResponseEntity<Resources<EmployeeResource>> allElmployees() {
         List<EmployeeResource> all = employerRepository.findAll().stream().map(EmployeeResource::new).collect(Collectors.toList());
-        ;
         final Resources<EmployeeResource> resources = new Resources<>(all);
         final String uriString = ServletUriComponentsBuilder.fromCurrentRequest().build().toUriString();
         resources.add(new Link(uriString, "self"));

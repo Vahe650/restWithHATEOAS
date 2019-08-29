@@ -4,11 +4,8 @@ package com.taskemployeerest.rest.hateoas;
 import com.taskemployeerest.rest.controller.EmployeeEndpoint;
 import com.taskemployeerest.rest.controller.TaskEndpoint;
 import com.taskemployeerest.rest.model.Employer;
-import com.taskemployeerest.rest.model.Task;
 import lombok.Getter;
 import org.springframework.hateoas.ResourceSupport;
-
-import java.util.List;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
