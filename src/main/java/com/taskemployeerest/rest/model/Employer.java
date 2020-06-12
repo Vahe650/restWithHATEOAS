@@ -27,4 +27,6 @@ public class Employer {
     private Degree degree;
     @OneToMany(mappedBy = "employer", cascade = CascadeType.ALL)
     private List<Task> tasks;
+
+
 }

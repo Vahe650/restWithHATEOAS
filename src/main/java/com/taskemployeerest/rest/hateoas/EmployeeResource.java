@@ -1,26 +1,32 @@
 package com.taskemployeerest.rest.hateoas;
 
 
-import com.taskemployeerest.rest.controller.EmployeeEndpoint;
-import com.taskemployeerest.rest.controller.TaskEndpoint;
+import com.taskemployeerest.rest.model.Degree;
 import com.taskemployeerest.rest.model.Employer;
 import lombok.Getter;
 import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.core.Relation;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+import java.util.List;
 
 @Getter
+@Relation(value="employee", collectionRelation="employees")
 public class EmployeeResource extends ResourceSupport {
 
-  private final Employer employer;
+    private static final TaskResourceAssembler taskResourceAsambler = new TaskResourceAssembler();
 
-  public EmployeeResource(final Employer employer) {
-    this.employer = employer;
-    final int id = employer.getId();
-    add(linkTo(methodOn(EmployeeEndpoint.class).allElmployees()).withRel("all"));
-    add(linkTo(methodOn(TaskEndpoint.class).getAllByEmployee(id)).withRel("getEmployeeSTasks"));
-    add(linkTo(methodOn(EmployeeEndpoint.class).get(id)).withRel("employee"));
-    add(linkTo(methodOn(EmployeeEndpoint.class).delete(id)).withRel("deleteEmployee"));
-  }
+    private String name;
+
+    private String surname;
+
+    private Degree degree;
+
+    private List<TaskResource> tasks;
+
+    public EmployeeResource(Employer employer) {
+        this.name = employer.getName();
+        this.surname = employer.getSurname();
+        this.degree = employer.getDegree();
+        this.tasks = taskResourceAsambler.toResources(employer.getTasks());
+    }
 }

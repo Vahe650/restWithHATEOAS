@@ -1,47 +1,52 @@
 package com.taskemployeerest.rest.controller;
 
 import com.taskemployeerest.rest.hateoas.EmployeeResource;
+import com.taskemployeerest.rest.hateoas.EmployerResourceAssembler;
 import com.taskemployeerest.rest.model.Employer;
 import com.taskemployeerest.rest.repository.EmployerRepository;
 import com.taskemployeerest.rest.repository.TaskRepository;
-import javassist.NotFoundException;
 import lombok.AllArgsConstructor;
-import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resources;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.persistence.EntityNotFoundException;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 @RestController
 @AllArgsConstructor
+@RequestMapping(value = "api/employers")
 public class EmployeeEndpoint {
     private EmployerRepository employerRepository;
-    private TaskRepository taskRepository;
 
 
     @GetMapping("/all")
-    public ResponseEntity<Resources<EmployeeResource>> allElmployees() {
-        List<EmployeeResource> all = employerRepository.findAll().stream().map(EmployeeResource::new).collect(Collectors.toList());
-        final Resources<EmployeeResource> resources = new Resources<>(all);
-        final String uriString = ServletUriComponentsBuilder.fromCurrentRequest().build().toUriString();
-        resources.add(new Link(uriString, "self"));
-        return ResponseEntity.ok(resources);
-
+    public ResponseEntity<Resources<EmployeeResource>>allElmployees() {
+        List<EmployeeResource> tacoResources =
+                new EmployerResourceAssembler().toResources(employerRepository.findAll());
+        Resources<EmployeeResource> recentResources =
+                new Resources<>(tacoResources);
+        recentResources.add(
+                linkTo(methodOn(EmployeeEndpoint.class).allElmployees())
+                        .withRel("all"));
+        return new ResponseEntity<>(recentResources, HttpStatus.OK);
     }
 
-    @GetMapping("/getOneEmployee/{id}")
-    public ResponseEntity get(@PathVariable(name = "id") int id) {
+    @GetMapping("/{id}")
+    public EmployeeResource get(@PathVariable(name = "id") int id) {
         Optional<Employer> one = employerRepository.findById(id);
-        return one.<ResponseEntity>map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.badRequest().body("empolyee with " + id + " id is not present"));
+        return one.map(employer -> new EmployerResourceAssembler().toResource(employer)).orElseThrow(EntityNotFoundException::new);
     }
 
-    @DeleteMapping("/deleteEmployee/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable(name = "id") int id) {
         try {
             return employerRepository.findById(id).map(employer -> {
@@ -55,7 +60,7 @@ public class EmployeeEndpoint {
 
     }
 
-    @PostMapping("/saveEmployee")
+    @PostMapping("/")
     public ResponseEntity<EmployeeResource> save(@RequestBody Employer employer) {
         employerRepository.save(employer);
         final URI uri = MvcUriComponentsBuilder.fromController(getClass()).path("/{id}").buildAndExpand(employer.getId()).toUri();
@@ -65,7 +70,7 @@ public class EmployeeEndpoint {
     }
 
 
-    @PutMapping("/updateEmployee/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<EmployeeResource> updateEmployee(@RequestBody Employer employer, @PathVariable("id") int id) {
         employer.setId(id);
         employerRepository.save(employer);
