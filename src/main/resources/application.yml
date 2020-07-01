@@ -5,22 +5,21 @@ server:
       timeout: 28800s
 
 spring:
-    jpa:
-        database: MYSQL
+    data:
+      rest:
+        base-path: /api
     datasource:
         url: jdbc:mysql://localhost:3306/taskemployer?verifyservercertificate=false&useSSL=false&characterEncoding=utf8&characterSetResults=utf8
         username: root
         password: root
-        driver-class-name: com.mysql.jdbc.Driver
+        driver-class-name: com.mysql.cj.jdbc.Driver
     thymeleaf:
       cache: false
+    jpa:
+      hibernate:
+        ddl-auto: update
+      properties:
+        hibernate:
+          dialect: org.hibernate.dialect.MySQL5InnoDBDialect
 #    session:
 #     timeout: ONE_MINUTE_IN_SECONDS
-logging:
-  level:
-    org.springframework.web: ERROR
-    com.itspace: DEBUG
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
-    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-  file: logWeb/application.log

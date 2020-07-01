@@ -15,6 +15,8 @@ public class EmployeeResource extends ResourceSupport {
 
     private static final TaskResourceAssembler taskResourceAsambler = new TaskResourceAssembler();
 
+    private int employerId;
+
     private String name;
 
     private String surname;
@@ -24,6 +26,7 @@ public class EmployeeResource extends ResourceSupport {
     private List<TaskResource> tasks;
 
     public EmployeeResource(Employer employer) {
+        this.employerId = employer.getId();
         this.name = employer.getName();
         this.surname = employer.getSurname();
         this.degree = employer.getDegree();

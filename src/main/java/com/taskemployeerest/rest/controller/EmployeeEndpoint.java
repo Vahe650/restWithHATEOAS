@@ -4,7 +4,6 @@ import com.taskemployeerest.rest.hateoas.EmployeeResource;
 import com.taskemployeerest.rest.hateoas.EmployerResourceAssembler;
 import com.taskemployeerest.rest.model.Employer;
 import com.taskemployeerest.rest.repository.EmployerRepository;
-import com.taskemployeerest.rest.repository.TaskRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.HttpStatus;
@@ -29,13 +28,13 @@ public class EmployeeEndpoint {
 
 
     @GetMapping("/all")
-    public ResponseEntity<Resources<EmployeeResource>>allElmployees() {
+    public ResponseEntity<Resources<EmployeeResource>> allEmployees() {
         List<EmployeeResource> tacoResources =
                 new EmployerResourceAssembler().toResources(employerRepository.findAll());
         Resources<EmployeeResource> recentResources =
                 new Resources<>(tacoResources);
         recentResources.add(
-                linkTo(methodOn(EmployeeEndpoint.class).allElmployees())
+                linkTo(methodOn(EmployeeEndpoint.class).allEmployees())
                         .withRel("all"));
         return new ResponseEntity<>(recentResources, HttpStatus.OK);
     }
@@ -60,7 +59,7 @@ public class EmployeeEndpoint {
 
     }
 
-    @PostMapping("/")
+    @PostMapping
     public ResponseEntity<EmployeeResource> save(@RequestBody Employer employer) {
         employerRepository.save(employer);
         final URI uri = MvcUriComponentsBuilder.fromController(getClass()).path("/{id}").buildAndExpand(employer.getId()).toUri();

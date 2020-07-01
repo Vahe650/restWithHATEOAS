@@ -1,11 +1,11 @@
 package com.taskemployeerest.rest.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -26,7 +26,7 @@ public class Employer {
     @Enumerated(EnumType.STRING)
     private Degree degree;
     @OneToMany(mappedBy = "employer", cascade = CascadeType.ALL)
-    private List<Task> tasks;
+    private List<Task> tasks = new ArrayList<>();
 
 
 }

@@ -9,15 +9,16 @@ import com.taskemployeerest.rest.repository.EmployerRepository;
 import com.taskemployeerest.rest.repository.TaskRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
-import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resources;
-import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.persistence.EntityNotFoundException;
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,10 +46,14 @@ public class TaskEndpoint {
     }
 
     @PostMapping("/{employeeId}")
-    public void addTask(@RequestBody Task task, @PathVariable("employeeId") int id) {
+    public ResponseEntity<TaskResource> save(@RequestBody Task task, @PathVariable("employeeId") int id) {
         Optional<Employer> employerById = employerRepository.findById(id);
-        task.setEmployer(employerById.get());
-        taskRepository.save(task);
+        return employerById.map(employer -> {
+            task.setEmployer(employer);
+            taskRepository.save(task);
+            final URI uri = MvcUriComponentsBuilder.fromController(getClass()).path("/{id}").buildAndExpand(task.getId()).toUri();
+            return ResponseEntity.created(uri).body(new TaskResource(task));
+        }).orElseThrow(EntityNotFoundException::new);
     }
 
     @ResponseBody
@@ -59,43 +64,47 @@ public class TaskEndpoint {
     }
 
     @GetMapping("/employee/{employeeId}")
-    public Resources<TaskResource>  getAllByEmployee(@PathVariable(name = "employeeId") int employeeId) {
+    public Resources<TaskResource> getAllTasksByEmployee(@PathVariable(name = "employeeId") int employeeId) {
         List<Task> tasks = taskRepository.findByEmployerId(employeeId);
-        List<TaskResource> taskResources =  new TaskResourceAssembler().toResources(tasks);
+        List<TaskResource> taskResources = new TaskResourceAssembler().toResources(tasks);
         Resources<TaskResource> tasksByEmployee = new Resources<>(taskResources);
-        tasksByEmployee.add(
-                linkTo(methodOn(TaskEndpoint.class).getAllByEmployee(employeeId))
+        tasksByEmployee.add(linkTo(methodOn(TaskEndpoint.class).getAllTasksByEmployee(employeeId))
                         .withRel("employee"));
         return tasksByEmployee;
     }
 
-
     @DeleteMapping("/{id}")
-    public ResponseEntity delete(@PathVariable(name = "id") int id) {
-        Optional<Task> one = taskRepository.findById(id);
-        if (one.isPresent()) {
-            taskRepository.delete(one.get());
-            return ResponseEntity.ok(one.get().getTitle() + " is deleted");
+    public ResponseEntity<?> delete(@PathVariable(name = "id") int id) {
+        try {
+            return taskRepository.findById(id).map(task -> {
+                taskRepository.deleteById(id);
+                return ResponseEntity.noContent().build();
+            }).orElseThrow(EntityNotFoundException::new);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return ResponseEntity.badRequest().body("empolyee with " + id + " id is not present");
+        return null;
+
     }
 
 
-    @PutMapping("/{taskID}")
-    public ResponseEntity update(@PathVariable("taskID") int id, @RequestBody Task task) {
+    @PutMapping("/{id}")
+    public ResponseEntity<TaskResource> update(@PathVariable("id") int id, @RequestBody Task task) {
         Optional<Task> byId = taskRepository.findById(id);
-        if (!byId.isPresent()) {
-            return ResponseEntity.badRequest().body("task with " + id + " id is not present");
-        }
-        task.setId(id);
-        taskRepository.save(task);
-        return ResponseEntity.ok(task);
+        return byId.map((taskFromDb) -> {
+            task.setId(id);
+            taskRepository.save(task);
+            final TaskResource resource = new TaskResource(task);
+            final URI uri = ServletUriComponentsBuilder.fromCurrentRequest().build().toUri();
+            return ResponseEntity.created(uri).body(resource);
+        }).orElseThrow(EntityNotFoundException::new);
+
 
     }
 
     @ResponseBody
     @GetMapping("/fromRest/{id}")
     public Task getIngredientById(@PathVariable("id") String ingredientId) {
-        return restTemplate.getForObject("http://localhost:8090/api/tasks/{id}",Task.class, ingredientId);
+        return restTemplate.getForObject("http://localhost:8090/api/tasks/{id}", Task.class, ingredientId);
     }
 }
